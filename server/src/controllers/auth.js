@@ -34,9 +34,7 @@ const controller = {
       const user = await User.findOne({ email });
       if (!user) return utils.handleSuccess(res, "User not exists !!", {}, 200);
 
-      console.log(password, user);
       if (await bcrypt.compare(password, user.password)) {
-        console.log(process.env.ACCESS_TOKEN_SECRET);
         const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET);
         return utils.handleSuccess(
           res,
@@ -47,7 +45,7 @@ const controller = {
           200
         );
       } else {
-        return utils.handleError(res, "User not authorized !!", 500);
+        return utils.handleSuccess(res, "User not authorized !!", {}, 500);
       }
     } catch (err) {
       return utils.handleError(res, err, 500);
@@ -62,7 +60,7 @@ const controller = {
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) return utils.handleError(res, err, 500);
 
-        req.user = user;
+        req.current = user;
         next();
       });
     } catch (err) {
