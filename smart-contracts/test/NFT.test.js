@@ -153,6 +153,39 @@ describe("Stud-Potato NFT testing", async () => {
       ).to.eventually.be.fulfilled;
     });
 
+    it("Getting the money to seller's account, if there is not return of the product", async () => {
+      const tokenId = await contract.getLatestTokenId();
+
+      // forwarding time after 10 days
+      await provider.send("evm_increaseTime", [utils.fromDaysToSecs(10)]);
+
+      await expect(
+        contract.connect(buyer).sendMoneyToSeller(tokenId),
+        "Only seller can get the money for the product !!"
+      ).to.eventually.be.rejected;
+
+      const sellerBal = await provider.getBalance(seller.address);
+      const _returnInfo = await contract.getReturnInfoFromTokenId(tokenId);
+      const _price = _returnInfo[0];
+      const _priceBN = BigNumber.from(_price);
+
+      await expect(contract.sendMoneyToSeller(tokenId)).to.eventually.be
+        .fulfilled;
+
+      const sellerBalAfter = await provider.getBalance(seller.address);
+
+      // rounding off the price to 4 digit places as
+      // the money will also consume in form of gas fees
+      expect(Math.floor(sellerBalAfter / 10 ** 14) * 10 ** 14).to.be.equal(
+        Math.floor(_priceBN.add(sellerBal) / 10 ** 14) * 10 ** 14
+      );
+
+      const _returnInfoAfter = await contract.getReturnInfoFromTokenId(tokenId);
+
+      // checking whether the return info is deleted or not
+      expect(_returnInfoAfter[0]).to.be.equal(0);
+    });
+
     it("Replace the product", async () => {
       const newUri = "https://my-portfolio-84.web.app/";
       const tokenId = await contract.getLatestTokenId();

@@ -141,6 +141,9 @@ contract StudPotato is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         }("");
 
         require(success, "Money Transferring failed !!");
+
+        //there is no need of the returnInfo once the return period is over
+        delete returnInfoFromTokenId[tokenId];
     }
 
     function _burn(uint256 tokenId)
