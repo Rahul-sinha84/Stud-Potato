@@ -174,16 +174,22 @@ describe("Stud-Potato NFT testing", async () => {
 
       const sellerBalAfter = await provider.getBalance(seller.address);
 
-      // rounding off the price to 4 digit places as
+      // rounding off the price to 3 digit places as
       // the money will also consume in form of gas fees
-      expect(Math.floor(sellerBalAfter / 10 ** 14) * 10 ** 14).to.be.equal(
-        Math.floor(_priceBN.add(sellerBal) / 10 ** 14) * 10 ** 14
+      expect(Math.floor(sellerBalAfter / 10 ** 15) * 10 ** 15).to.be.equal(
+        Math.floor(_priceBN.add(sellerBal) / 10 ** 15) * 10 ** 15
       );
 
       const _returnInfoAfter = await contract.getReturnInfoFromTokenId(tokenId);
 
       // checking whether the return info is deleted or not
       expect(_returnInfoAfter[0]).to.be.equal(0);
+
+      // once the money is withdrawn it cannot be withdrawn again
+      await expect(
+        contract.sendMoneyToSeller(tokenId),
+        "Money can't be withdrawn again !!"
+      ).to.eventually.be.rejected;
     });
 
     it("Replace the product", async () => {

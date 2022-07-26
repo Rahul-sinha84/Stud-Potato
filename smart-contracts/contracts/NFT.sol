@@ -131,6 +131,11 @@ contract StudPotato is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
             "Only seller of the product is required !!"
         );
         require(
+            returnInfoFromTokenId[tokenId].price != 0,
+            "Money already withdrawn !!"
+        );
+
+        require(
             returnInfoFromTokenId[tokenId].dateOfPurchase + 10 days <
                 block.timestamp,
             "Return period is not over !!"
