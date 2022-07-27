@@ -32,7 +32,7 @@ const controller = {
       const { email, password } = req.body;
 
       const user = await User.findOne({ email });
-      if (!user) return utils.handleSuccess(res, "User not exists !!", {}, 200);
+      if (!user) return utils.handleSuccess(res, "User not exists !!", {}, 404);
 
       if (await bcrypt.compare(password, user.password)) {
         const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET);

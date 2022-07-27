@@ -10,11 +10,16 @@ const routes = (app) => {
     authController.isAuthenticated,
     warrantyController.createWarranty
   );
+  route.get(
+    "/:warrantyId",
+    authController.isAuthenticated,
+    warrantyController.getWarrantyFromId
+  );
 
   route.get(
     "/",
     authController.isAuthenticated,
-    warrantyController.getAllWarrantyFromId
+    warrantyController.getAllWarrantyOfUser
   );
 
   route.put(

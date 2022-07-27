@@ -28,6 +28,14 @@ const requestSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    msgBySeller: {
+      type: String,
+      default: "",
+    },
+    tag: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: { createdAt: true, updatedAt: true } }
 );

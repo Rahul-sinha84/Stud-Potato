@@ -5,6 +5,7 @@ import authRoute from "./routes/auth.js";
 import userRoute from "./routes/user.js";
 import warrantyRoute from "./routes/warranty.js";
 import productRoute from "./routes/product.js";
+import requestRoute from "./routes/request.js";
 
 const PORT = process.env.PORT;
 const app = express();
@@ -18,5 +19,6 @@ authRoute(app);
 userRoute(app);
 warrantyRoute(app);
 productRoute(app);
+requestRoute(app);
 
 app.listen(PORT, () => console.log(`Server started on: ${PORT}`));

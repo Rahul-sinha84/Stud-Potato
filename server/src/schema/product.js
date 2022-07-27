@@ -6,6 +6,22 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    imgSrc: {
+      type: String,
+      required: true,
+    },
+    serialNumber: {
+      type: String,
+      required: true,
+    },
+    modelNumber: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "seller",
@@ -30,6 +46,17 @@ const productSchema = new mongoose.Schema(
     },
     dateOfPurchase: {
       type: Number,
+    },
+    tokenId: {
+      type: Number,
+    },
+    moneyWithdrawn: {
+      type: Boolean,
+      default: false,
+    },
+    isBurned: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: { createdAt: true, updatedAt: true } }

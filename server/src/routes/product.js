@@ -12,15 +12,33 @@ const routes = (app) => {
   );
 
   route.get(
+    "/:productId",
+    authController.isAuthenticated,
+    productController.getProductById
+  );
+
+  route.get(
     "/get/warranty/:warrantyId",
     authController.isAuthenticated,
     productController.getAllProductByWarranty
   );
 
   route.get(
-    "/get",
+    "/get/user",
     authController.isAuthenticated,
     productController.getAllProductByUser
+  );
+
+  route.get(
+    "/get/user/unsold",
+    authController.isAuthenticated,
+    productController.getAllSoldProduct
+  );
+
+  route.get(
+    "/",
+    authController.isAuthenticated,
+    productController.getAllUnsoldProducts
   );
 
   route.put(

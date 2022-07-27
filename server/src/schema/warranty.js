@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const warrantySchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+    },
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "seller",
