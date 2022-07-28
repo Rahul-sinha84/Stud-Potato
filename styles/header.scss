@@ -1,0 +1,44 @@
+.header {
+  padding: 1.5rem 2rem;
+  box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0.296);
+  //   position: fixed;
+  //   top: 0;
+  width: 100%;
+  background-color: white;
+  z-index: 1000;
+  &__container {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    align-items: center;
+    margin: 0 auto;
+    width: 80%;
+    &--first {
+      display: flex;
+      margin-right: 5rem;
+      align-items: center;
+      &__item {
+        font-size: 1.3rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    }
+    &--second {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      &__item {
+        margin-right: 2rem;
+        cursor: pointer;
+      }
+    }
+    &--third {
+      display: flex;
+      align-items: center;
+      position: relative;
+      &__item {
+        cursor: pointer;
+      }
+    }
+  }
+}

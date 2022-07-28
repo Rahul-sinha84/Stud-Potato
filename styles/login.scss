@@ -1,0 +1,68 @@
+.login {
+  // margin-top: 5rem;
+  // height: 100%;
+  &__container {
+    display: flex;
+    &--first {
+      height: 100vh;
+    }
+    &--second {
+      flex: 4;
+      padding: 2rem 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      &__heading {
+        font-size: 2rem;
+        font-weight: 600;
+      }
+      &__text-field {
+        margin: 2rem;
+        width: 50%;
+        align-items: center;
+        &--item {
+          display: flex;
+          flex-direction: column;
+          margin: 1.3rem;
+          label {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+          }
+          input {
+            font-size: 1.5rem;
+            width: 100%;
+            padding: 0.2rem 0.5rem;
+          }
+        }
+      }
+      &__button {
+        text-align: center;
+        &--btn-login {
+          background-color: ($color-secondary);
+          width: 100%;
+        }
+        &--or {
+          display: flex;
+          align-items: center;
+          .text-or {
+            font-size: 1.2rem;
+            margin: 1rem;
+            font-weight: 400;
+            color: $text-color-light;
+          }
+          .hr-line {
+            width: 5rem;
+            background-color: rgb(166, 166, 166);
+            height: 0.1px;
+          }
+        }
+        &--btn-signup {
+          background-color: ($color-primary);
+          width: 100%;
+        }
+      }
+    }
+  }
+}

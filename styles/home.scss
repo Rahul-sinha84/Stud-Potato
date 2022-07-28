@@ -1,0 +1,73 @@
+.home {
+  &__container {
+    &--header {
+      position: relative;
+      img {
+        width: 100%;
+        // height: 100vh;
+      }
+      &--content {
+        position: absolute;
+        top: 50%;
+        transform: translate(10%, -50%);
+
+        &__heading {
+          //   text-transform: uppercase;
+          font-size: 2.5rem;
+        }
+        &__text {
+          text-transform: uppercase;
+          font-size: 4rem;
+          font-family: PlayfairDisplay-Bold;
+          margin: 1rem 0;
+        }
+        &__button {
+          button {
+            background-color: $color-primary;
+          }
+        }
+      }
+    }
+    &--body {
+      width: 80%;
+      margin: 10rem auto;
+      .home-product {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        &__item {
+          position: relative;
+          box-shadow: 1rem 1rem 1rem rgba(0, 0, 0, 0.209);
+          border-radius: 10px;
+          img {
+            width: 17rem;
+            filter: brightness(40%);
+          }
+          padding: 0.8rem;
+          &--text {
+            text-align: center;
+            position: absolute;
+            width: 80%;
+            line-height: 2rem;
+            color: white;
+            font-weight: 500;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.3rem;
+          }
+        }
+        &__dots {
+          display: flex;
+          &--item {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 20px;
+            margin: 0 0.2rem;
+            background-color: $color-secondary;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,102 @@
+.signup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 3rem 0;
+  &__container {
+    width: 80%;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0.1rem 0.5rem 0.5rem 0.5rem rgba(0, 0, 0, 0.143);
+    align-items: center;
+    padding: 5rem 2rem;
+    &--title {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+    &--content {
+      width: 50%;
+      &__item {
+        display: flex;
+        flex-direction: column;
+        margin: 1.2rem;
+        label {
+          margin-bottom: 0.5rem;
+          font-size: 1.2rem;
+          font-weight: 600;
+        }
+        input {
+          font-size: 1.2rem;
+          padding: 0.2rem 0.5rem;
+        }
+        .metamask-connect {
+          &__true {
+            border: 0.2rem solid green;
+            padding: 0.5rem 0.8rem;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            &--icon {
+            }
+            &--text {
+              font-size: 1.2rem;
+              font-weight: 600;
+            }
+          }
+          &__false {
+            text-align: center;
+            padding: 0.5rem 0.8rem;
+            &--btn {
+              margin-bottom: 1rem;
+              background-color: ($color-secondary);
+            }
+            &--text {
+              font-size: 1.2rem;
+              color: red;
+            }
+          }
+        }
+      }
+      &__item-radio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 1.2rem;
+        .radio-container {
+          display: flex;
+          text-align: center;
+          margin: 1.5rem 0;
+          label {
+            display: flex;
+            align-items: center;
+            margin: 0rem 5rem;
+            cursor: pointer;
+            .radio-box__title {
+              font-size: 1.2rem;
+              font-weight: 600;
+            }
+            .radio-box__container {
+              margin-right: 1rem;
+            }
+          }
+          .radio-input {
+            display: none;
+          }
+          .radio-input:checked + label .radio-box__container div {
+            opacity: 1;
+            visibility: visible;
+          }
+        }
+      }
+    }
+    &--submit {
+      margin-top: 2rem;
+
+      .submit-btn {
+        background-color: ($color-primary);
+      }
+    }
+  }
+}
