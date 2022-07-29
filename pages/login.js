@@ -1,9 +1,58 @@
-import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import { useState } from "react";
 import landingPageImage from "../assets/loginImage.jpg";
+import axios from "../services/axios";
+import { connect } from "react-redux";
+import {
+  changeAlertMessage,
+  changeShowAlert,
+  changeJwtToken,
+  changeIsLoggedIn,
+  changeFlashMessage,
+  changeShowFlash,
+  changeUserInfo,
+} from "../redux/action";
+import Utils from "../components/Utils";
 
-const Login = () => {
+const Login = ({
+  state,
+  changeAlertMessage,
+  changeShowAlert,
+  changeIsLoggedIn,
+  changeJwtToken,
+  changeFlashMessage,
+  changeShowFlash,
+  changeUserInfo,
+}) => {
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState("");
+
+  const handleLogin = async () => {
+    if (!email || !pass) {
+      changeAlertMessage("Fill all the fields !!");
+      changeShowAlert(true);
+    }
+    try {
+      await axios
+        .post("/login", { email, password: pass })
+        .then((response) => {
+          const data = response.data.data;
+          changeJwtToken(data.accessToken);
+          changeUserInfo(data.user);
+          changeIsLoggedIn(true);
+          changeFlashMessage("Logged in Successfully !!");
+          changeShowFlash(true);
+        })
+        .catch((err) => {
+          const resp = err.response.data;
+          changeAlertMessage(resp.message);
+          changeShowAlert(true);
+        });
+    } catch (err) {
+      return Utils.handleError(err);
+    }
+  };
+
   return (
     <div className="login">
       <div className="login__container">
@@ -19,19 +68,32 @@ const Login = () => {
           <div className="login__container--second__text-field">
             <div className="login__container--second__text-field--item">
               <label htmlFor="email">Email</label>
-              <input type="email" placeholder="Type here..." id="email" />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="Type here..."
+                id="email"
+              />
             </div>
             <div className="login__container--second__text-field--item">
               <label htmlFor="pss">Password</label>
-              <input type="password" placeholder="Type here..." id="pss" />
+              <input
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                type="password"
+                placeholder="Type here..."
+                id="pss"
+              />
             </div>
           </div>
           <div className="login__container--second__button">
-            <Link href="/login">
-              <button className="button login__container--second__button--btn-login">
-                Login
-              </button>
-            </Link>
+            <button
+              onClick={handleLogin}
+              className="button login__container--second__button--btn-login"
+            >
+              Login
+            </button>
             <div className="login__container--second__button--or">
               <div className="hr-line"></div>
               <div className="text-or">Or</div>
@@ -49,4 +111,13 @@ const Login = () => {
   );
 };
 
-export default Login;
+const mapStateToProps = (state) => ({ state });
+export default connect(mapStateToProps, {
+  changeAlertMessage,
+  changeShowAlert,
+  changeIsLoggedIn,
+  changeJwtToken,
+  changeFlashMessage,
+  changeShowFlash,
+  changeUserInfo,
+})(Login);

@@ -5,7 +5,6 @@ import card1 from "../assets/homePage1.jpg";
 import card2 from "../assets/homePage2.jpg";
 import card3 from "../assets/homePage3.jpg";
 // import card3 from "../assets/homePage3.jpg";
-import WithAuth from "../components/withAuth";
 
 const Main = () => {
   return (

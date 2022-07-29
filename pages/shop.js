@@ -2,6 +2,15 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { BiSearch } from "react-icons/bi";
 import Product from "../components/Product";
+import { connect } from "react-redux";
+import {
+  changeShowLoader,
+  changeAlertMessage,
+  changeShowAlert,
+  changeShowFlash,
+  changeFlashMessage,
+} from "../redux/action";
+import axios from "../services/axios";
 
 const dummyProd = [
   {
@@ -41,19 +50,48 @@ const dummyProd = [
     price: "1099",
   },
 ];
-const Shop = () => {
+const Shop = ({
+  changeShowLoader,
+  changeAlertMessage,
+  changeShowAlert,
+  changeShowFlash,
+  changeFlashMessage,
+  state,
+}) => {
+  const { jwtToken } = state;
+
+  const [productData, setProductData] = useState([]);
   const [products, setProducts] = useState([]);
 
   const allProducts = () => {
-    return dummyProd.map((val, ind) => (
-      <div key={ind}>
+    return productData.map((val, ind) => (
+      <div key={val._id}>
         <Product product={val} />
       </div>
     ));
   };
+
+  const getData = async () => {
+    if (!jwtToken) return;
+
+    // getting all the unsold products
+    const productResponse = await axios.get("/product", {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    });
+
+    setProductData(productResponse.data.data);
+  };
+
   useEffect(() => {
-    setProducts(allProducts());
-  }, []);
+    (async () => {
+      changeShowLoader(true);
+      await getData();
+      setProducts(allProducts());
+      changeShowLoader(false);
+    })();
+  }, [jwtToken, productData.length]);
   return (
     <div className="shop">
       <div className="shop__container">
@@ -77,4 +115,11 @@ const Shop = () => {
   );
 };
 
-export default Shop;
+const mapStateToProps = (state) => ({ state });
+export default connect(mapStateToProps, {
+  changeShowLoader,
+  changeAlertMessage,
+  changeShowAlert,
+  changeShowFlash,
+  changeFlashMessage,
+})(Shop);

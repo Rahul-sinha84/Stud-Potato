@@ -5,11 +5,11 @@ import Utils from "../utils.js";
 const controllers = {
   createWarranty: async (req, res) => {
     try {
-      const { isSeller } = req.current.user;
+      const { isSeller, _id } = req.current.user;
       if (!isSeller)
         return Utils.handleSuccess(res, "Only Seller is Allowed !!", {}, 401);
 
-      await Warranty.create({ ...req.body, seller: req.current.user._id })
+      await Warranty.create({ ...req.body, seller: _id })
         .then((_) => Utils.handleSuccess(res, "Warranty created !!", {}, 200))
         .catch((err) => Utils.handleError(res, err, 500));
     } catch (err) {

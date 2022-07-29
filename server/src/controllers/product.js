@@ -70,6 +70,8 @@ const controllers = {
       const { _id } = req.current.user;
       await Product.find({ seller: _id })
         .then(async (data) => {
+          if (!data.length)
+            return Utils.handleSuccess(res, "All Products !!", data, 200);
           let reqData = [];
           data.forEach(async (val, ind) => {
             const warranty = await Warranty.findById(val.warranty);

@@ -22,6 +22,8 @@ import {
 } from "../redux/action";
 import Header from "./Header";
 import Loader from "./Loader";
+import Alert from "./modals/alertModal";
+import Flash from "./modals/flashModal";
 
 const Layout = ({
   children,
@@ -43,6 +45,7 @@ const Layout = ({
     metamaskStatus,
     metamaskConnectFunction,
     showLoader,
+    isLoggedIn,
   } = state;
 
   const [quote, setQuote] = useState({
@@ -96,13 +99,13 @@ const Layout = ({
 
   // redirecting the page to login page when the user is not logged in
   useEffect(() => {
-    if (!metamaskStatus) {
+    if (!isLoggedIn) {
       if (router.pathname !== "/login" && router.pathname !== "/signup")
         Router.push("/login");
     } else {
       Router.push("/");
     }
-  }, [metamaskStatus ? 84 : router.pathname, metamaskStatus]);
+  }, [isLoggedIn ? "dummy-string" : router.pathname, isLoggedIn]);
   return (
     <>
       <>
@@ -126,6 +129,8 @@ const Layout = ({
             </div>
           </div>
         </Loader>
+        <Alert />
+        <Flash />
       </>
     </>
   );

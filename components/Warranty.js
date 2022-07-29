@@ -1,17 +1,37 @@
 import React from "react";
 import { useState } from "react";
-import Modal from "./modal";
-import Utils from "../components/Utils";
+import Modal from "./modals/modal";
+import { connect } from "react-redux";
+import {
+  changeAlertMessage,
+  changeShowAlert,
+  changeFlashMessage,
+  changeShowFlash,
+} from "../redux/action";
+import axios from "../services/axios";
 
-const Warranty = ({ item }) => {
+const Warranty = ({
+  item,
+  changeAlertMessage,
+  changeShowAlert,
+  changeFlashMessage,
+  changeShowFlash,
+  state,
+  loadData,
+  setLoadData,
+}) => {
   const {
+    _id,
     seller,
     name = "",
-    isInUse = false,
+    isInUse = true,
     validity = "2023-05-29",
     termsAndCondition = "",
     itemType = "",
   } = item;
+
+  const { jwtToken } = state;
+
   const [showModal, setShowModal] = useState(false);
   const [_name, _setName] = useState(name);
   const [_itemType, _setItemType] = useState(itemType);
@@ -19,7 +39,84 @@ const Warranty = ({ item }) => {
     useState(termsAndCondition);
 
   const [_validity, _setValidity] = useState(validity);
-  console.log(_validity);
+
+  const saveWarranty = async () => {
+    if (!jwtToken) {
+      changeAlertMessage(
+        "Having some issues on connection, try loggin out and logging in again !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    if (!_name || !_itemType || !_termsAndCondition) {
+      changeAlertMessage("Please specify all the fields !!");
+      changeShowAlert(true);
+      return;
+    }
+    if (_validity <= 0) {
+      changeAlertMessage("Warranty should be atleast of one year !!");
+      changeShowAlert(true);
+      return;
+    }
+
+    await axios
+      .put(
+        `/warranty/${_id}`,
+        {
+          name: _name,
+          itemType: _itemType,
+          termsAndCondition: _termsAndCondition,
+          validity: _validity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      )
+      .then((response) => {
+        changeFlashMessage("Warranty updated successfully !!");
+        changeShowFlash(true);
+        setLoadData(!loadData);
+        setShowModal(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        const resp = err.response.data;
+        changeAlertMessage(resp.message);
+        changeShowAlert(true);
+      });
+  };
+
+  const deleteWarranty = async () => {
+    if (!jwtToken) {
+      changeAlertMessage(
+        "Having some issues on connection, try loggin out and logging in again !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    const isHeSure = confirm("Are you sure to delete this warranty ??");
+    if (!isHeSure) return;
+    await axios
+      .delete(`/warranty/${_id}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+      .then((res) => {
+        changeFlashMessage("Warranty Deleted successfully !!");
+        changeShowFlash(true);
+        setLoadData(!loadData);
+        setShowModal(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        const resp = err.response.data;
+        changeAlertMessage(resp.message);
+        changeShowAlert(true);
+      });
+  };
 
   const modalContent = () => (
     <div className="warranty-modal">
@@ -47,14 +144,12 @@ const Warranty = ({ item }) => {
           />
         </div>
         <div className="warranty-modal__container--validity">
-          <label htmlFor="validity">Valid upto</label>
+          <label htmlFor="validity">Valid upto (in years)</label>
           <input
-            value={Utils.getStringFromTimeStamp(_validity)}
-            onChange={(e) =>
-              _setValidity(Utils.getTimeStampFromString(e.target.value))
-            }
+            value={_validity}
+            onChange={(e) => _setValidity(e.target.value)}
             disabled={isInUse}
-            type="date"
+            type="number"
             id="validity"
           />
         </div>
@@ -78,8 +173,12 @@ const Warranty = ({ item }) => {
           </div>
         ) : (
           <>
-            <button className="button save">Save</button>
-            <button className="button delete">Delete</button>
+            <button onClick={saveWarranty} className="button save">
+              Save
+            </button>
+            <button onClick={deleteWarranty} className="button delete">
+              Delete
+            </button>
           </>
         )}
       </div>
@@ -89,10 +188,10 @@ const Warranty = ({ item }) => {
     <>
       <div onClick={() => setShowModal(true)} className="warranty">
         <div className="warranty__container">
-          <div className="warranty__container--name">{name}</div>
-          <div className="warranty__container--item-type">{itemType}</div>
+          <div className="warranty__container--name">{_name}</div>
+          <div className="warranty__container--item-type">{_itemType}</div>
           <div className="warranty__container--validity">
-            {Utils.getStringFromTimeStamp(validity)}
+            {_validity} Year/s
           </div>
         </div>
       </div>
@@ -103,4 +202,10 @@ const Warranty = ({ item }) => {
   );
 };
 
-export default Warranty;
+const mapStateToProps = (state) => ({ state });
+export default connect(mapStateToProps, {
+  changeAlertMessage,
+  changeShowAlert,
+  changeFlashMessage,
+  changeShowFlash,
+})(Warranty);

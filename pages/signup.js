@@ -1,10 +1,93 @@
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import { BsFillCheckCircleFill } from "react-icons/bs";
-import { changeMetamaskStatus } from "../redux/action";
+import {
+  changeMetamaskStatus,
+  changeShowAlert,
+  changeAlertMessage,
+  changeShowLoader,
+  changeFlashMessage,
+  changeShowFlash,
+} from "../redux/action";
+import axios from "../services/axios";
 
-const Signup = ({ state, changeMetamaskStatus }) => {
-  const { contractInstance, metamaskConnectFunction, metamaskStatus } = state;
+const Signup = ({
+  state,
+  changeMetamaskStatus,
+  changeShowAlert,
+  changeAlertMessage,
+  changeShowLoader,
+  changeFlashMessage,
+  changeShowFlash,
+}) => {
+  const {
+    contractInstance,
+    metamaskConnectFunction,
+    metamaskStatus,
+    currentAccount,
+  } = state;
+
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [cnfrmPassword, setCnfrmPassword] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isSeller, setIsSeller] = useState(true);
+  // const [accountAddress, setAccountAddress] = useState(currentAccount);
+
+  const signup = async () => {
+    if (
+      !name ||
+      !username ||
+      !email ||
+      !password ||
+      !cnfrmPassword ||
+      !address ||
+      !phone
+    ) {
+      changeAlertMessage("Please fill all the fields !!");
+      changeShowAlert(true);
+      return;
+    }
+    if (!currentAccount) {
+      changeAlertMessage("Connect you metamask account to continue !!");
+      changeShowAlert(true);
+    } else if (password !== cnfrmPassword) {
+      changeAlertMessage(
+        "Confirm Password is not matching with your Password !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    await axios
+      .post("/signup", {
+        nameOfStore: name,
+        email,
+        username,
+        password,
+        address: currentAccount,
+        isSeller,
+        phone,
+        storeAddress: address,
+      })
+      .then((res) => {
+        changeFlashMessage("Registered Successfully !!");
+        changeShowFlash(true);
+        router.push("/login");
+      })
+      .catch((err) => {
+        const resp = err.response.data;
+        changeAlertMessage(resp.message);
+        changeShowAlert(true);
+      });
+  };
+  const handleRadioChange = (e) => {
+    setIsSeller(e.target.value === "seller" ? true : false);
+  };
 
   return (
     <div className="signup">
@@ -13,23 +96,49 @@ const Signup = ({ state, changeMetamaskStatus }) => {
         <div className="signup__container--content">
           <div className="signup__container--content__item">
             <label htmlFor="name">Name</label>
-            <input type="text" placeholder="Type here..." id="name" />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              type="text"
+              placeholder="Type here..."
+              id="name"
+            />
           </div>
           <div className="signup__container--content__item">
             <label htmlFor="username">Username</label>
-            <input type="text" placeholder="Type here..." id="username" />
+            <input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              type="text"
+              placeholder="Type here..."
+              id="username"
+            />
           </div>
           <div className="signup__container--content__item">
             <label htmlFor="email">Email</label>
-            <input type="email" placeholder="Type here..." id="email" />
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              placeholder="Type here..."
+              id="email"
+            />
           </div>
           <div className="signup__container--content__item">
             <label htmlFor="psswrd">Password</label>
-            <input type="password" placeholder="Type here..." id="psswrd" />
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              placeholder="Type here..."
+              id="psswrd"
+            />
           </div>
           <div className="signup__container--content__item">
             <label htmlFor="cnfrmpsswrd">Confirm Password</label>
             <input
+              value={cnfrmPassword}
+              onChange={(e) => setCnfrmPassword(e.target.value)}
               type="password"
               placeholder="Type here..."
               id="cnfrmpsswrd"
@@ -37,11 +146,23 @@ const Signup = ({ state, changeMetamaskStatus }) => {
           </div>
           <div className="signup__container--content__item">
             <label htmlFor="address">Address</label>
-            <input type="text" placeholder="Type here..." id="address" />
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              type="text"
+              placeholder="Type here..."
+              id="address"
+            />
           </div>
           <div className="signup__container--content__item">
             <label htmlFor="phno">Phone</label>
-            <input type="text" placeholder="Type here..." id="phno" />
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              type="text"
+              placeholder="Type here..."
+              id="phno"
+            />
           </div>
           <div className="signup__container--content__item-radio">
             <div className="radio-container">
@@ -51,6 +172,9 @@ const Signup = ({ state, changeMetamaskStatus }) => {
                   name="isSeller"
                   type="radio"
                   id="yes"
+                  value="seller"
+                  checked={isSeller}
+                  onChange={handleRadioChange}
                 />
                 <label htmlFor="yes">
                   <div className="radio-box__container">
@@ -65,6 +189,9 @@ const Signup = ({ state, changeMetamaskStatus }) => {
                   name="isSeller"
                   type="radio"
                   id="no"
+                  value="consumer"
+                  checked={!isSeller}
+                  onChange={handleRadioChange}
                 />
                 <label htmlFor="no">
                   <div className="radio-box__container">
@@ -106,7 +233,9 @@ const Signup = ({ state, changeMetamaskStatus }) => {
           </div>
         </div>
         <div className="signup__container--submit">
-          <button className="button submit-btn">Signup</button>
+          <button onClick={signup} className="button submit-btn">
+            Signup
+          </button>
         </div>
       </div>
     </div>
@@ -114,4 +243,11 @@ const Signup = ({ state, changeMetamaskStatus }) => {
 };
 
 const mapStateToProps = (state) => ({ state });
-export default connect(mapStateToProps, { changeMetamaskStatus })(Signup);
+export default connect(mapStateToProps, {
+  changeMetamaskStatus,
+  changeShowAlert,
+  changeAlertMessage,
+  changeShowLoader,
+  changeFlashMessage,
+  changeShowFlash,
+})(Signup);

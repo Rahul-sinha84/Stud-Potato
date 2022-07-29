@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Modal from "./modal";
+import Modal from "./modals/modal";
 
 const Request = ({ request }) => {
   const { description, product, tag = "warranty" } = request;

@@ -1,33 +1,164 @@
 import React, { useState } from "react";
-import Modal from "./modal";
+import Modal from "./modals/modal";
 import { AiOutlineCaretDown } from "react-icons/ai";
+import { connect } from "react-redux";
+import {
+  changeAlertMessage,
+  changeShowAlert,
+  changeFlashMessage,
+  changeShowFlash,
+  changeShowLoader,
+} from "../redux/action";
+import axios from "../services/axios";
 
-const Product = ({ product, warranties = [], isEdit = false }) => {
+const Product = ({
+  product,
+  warranties = [],
+  isEdit = false,
+  state,
+  changeAlertMessage,
+  changeShowAlert,
+  changeFlashMessage,
+  changeShowFlash,
+  changeShowLoader,
+  setLoadData,
+  loadData,
+}) => {
+  const { jwtToken } = state;
+
   const {
+    _id,
     imgSrc = "",
     name = "",
     price = "",
     modelNumber = "",
     serialNumber = "",
-    seller = "Ramesh",
-    dateOfPurchase = Date.now(),
-    isSold = true,
-    description = "Pariatur aliquip nulla commodo aute consequat commodo pariatur aliquip laborum Lorem ullamco reprehenderit anim. Deserunt adipisicing cupidatat sit eu quis ea. In incididunt in incididunt occaecat nulla fugiat ut occaecat ex consequat. Laborum nisi dolore velit irure ex id qui mollit do et eiusmod minim sit pariatur. Sint ullamco id veniam Lorem sunt velit voluptate eu est pariatur labore elit eiusmod. Nostrud aute eu minim eiusmod reprehenderit do culpa id duis proident consequat officia laboris occaecat. Nulla aliquip eiusmod et anim mollit aliquip fugiat.",
+    seller,
+    dateOfPurchase,
+    isSold,
+    description,
     warranty = {
-      validity: "2 years",
+      validity: "2years",
       termsAndCondition:
-        "Elit et nulla in culpa incididunt dolor irure proident duis ad. Amet consectetur excepteur magna aute fugiat commodo fugiat voluptate esse minim labore consequat duis. Deserunt tempor excepteur cillum fugiat commodo elit. Duis enim exercitation culpa occaecat occaecat reprehenderit labore proident esse enim ipsum. Ut qui ex sit exercitation velit. Et et ullamco eiusmod reprehenderit eiusmod aliquip nisi. Pariatur eiusmod mollit commodo est eu consequat officia veniam sit culpa cupidatat pariatur.",
+        "Enim labore elit labore commodo esse. Aliqua exercitation in aute labore nostrud voluptate adipisicing tempor amet commodo culpa voluptate. Ut cupidatat sunt minim aliquip in irure dolor qui esse.",
     },
   } = product;
+
   const [modalShow, setModalShow] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [dropdownSelected, setDropdownSelected] = useState();
+  const [dropdownSelected, setDropdownSelected] = useState(warranty);
   const [_name, _setName] = useState(name);
   const [_price, _setPrice] = useState(price);
   const [_description, _setDescription] = useState(description);
   const [_modelNumber, _setModelNumber] = useState(modelNumber);
   const [_serialNumber, _setSerialNumber] = useState(serialNumber);
   const [claimModalShow, setClaimModalShow] = useState(false);
+
+  const handleSaveProduct = async () => {
+    if (!jwtToken) {
+      changeAlertMessage(
+        "Having some issues on connection, try logging out and logging in again !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    if (
+      !_name ||
+      !_price ||
+      !_description ||
+      !_modelNumber ||
+      !_serialNumber ||
+      !dropdownSelected
+    ) {
+      changeAlertMessage("Please specify all the fields !!");
+      changeShowAlert(true);
+      return;
+    }
+    changeShowLoader(true);
+    const { files } = document.querySelector(".product-image__upload-save");
+    let uploadImgURL = "";
+    if (files.length) {
+      const formData = new FormData();
+      formData.append("file", files[0]);
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_UPLOAD_PRESET);
+
+      const options = {
+        method: "POST",
+        body: formData,
+      };
+      const response = await await fetch(
+        `https://api.Cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUD_NAME}/image/upload`,
+        options
+      );
+      uploadImgURL = (await response.json()).secure_url;
+    }
+    await axios
+      .put(
+        `/product/${_id}`,
+        {
+          name: _name,
+          imgSrc: uploadImgURL,
+          serialNumber: _serialNumber,
+          modelNumber: _modelNumber,
+          description: _description,
+          warranty: dropdownSelected._id,
+          price: _price,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
+      )
+      .then((response) => {
+        changeFlashMessage("Product updated successfully !!");
+        changeShowFlash(true);
+
+        setModalShow(false);
+        setLoadData(!loadData);
+      })
+      .catch((err) => {
+        console.log(err);
+        const resp = err.response.data;
+        changeAlertMessage(resp.message);
+        changeShowLoader(false);
+        changeShowAlert(true);
+      });
+    changeShowLoader(false);
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!jwtToken) {
+      changeAlertMessage(
+        "Having some issues on connection, try logging out and logging in again !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    const isHeSure = confirm("Are you sure to delete this product ??");
+    if (!isHeSure) return;
+    changeShowLoader(true);
+    await axios
+      .delete(`/product/${_id}`, {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      })
+      .then((res) => {
+        setLoadData(!loadData);
+        setModalShow(false);
+        changeFlashMessage("Successfully deleted the product !!");
+        changeShowFlash(true);
+      })
+      .catch((err) => {
+        console.log(err);
+        const resp = err.response.data;
+        changeAlertMessage(resp.message);
+        changeShowLoader(false);
+        changeShowAlert(true);
+      });
+    changeShowLoader(false);
+  };
 
   const modalContent = () => {
     if (!isEdit)
@@ -46,10 +177,10 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                     {name}
                   </div>
                   <div className="product-modal__container--product-info__about--price">
-                    ₹{price}
+                    {price} ETH
                   </div>
                   <div className="product-modal__container--product-info__about--seller">
-                    <b>Sold by:</b> {seller}
+                    <b>Sold by:</b> {seller.username}
                   </div>
                   <div className="product-modal__container--product-info__about--seller">
                     <b>Model number:</b> {modelNumber}
@@ -70,10 +201,10 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
             </div>
             <div className="product-modal__container--warranty-info">
               <div className="product-modal__container--warranty-info__title">
-                Warranty
+                {warranty.name}
               </div>
               <div className="product-modal__container--warranty-info__validity">
-                {warranty.validity}
+                {warranty.validity} year(/s)
               </div>
               <div className="product-modal__container--warranty-info__terms">
                 {warranty.termsAndCondition}
@@ -116,6 +247,7 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                 placeholder="Enter here"
                 type="text"
                 id="name"
+                disabled={isSold}
               />
             </div>
             <div className="create-product-modal__container--content__item">
@@ -126,6 +258,7 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                 placeholder="Enter here"
                 type="text"
                 id="nmo"
+                disabled={isSold}
               />
             </div>
             <div className="create-product-modal__container--content__item">
@@ -136,6 +269,7 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                 placeholder="Enter here"
                 type="text"
                 id="sno"
+                disabled={isSold}
               />
             </div>
             <div className="create-product-modal__container--content__item">
@@ -146,6 +280,7 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                 placeholder="Enter here"
                 type="text"
                 id="price"
+                disabled={isSold}
               />
             </div>
             <div className="create-product-modal__container--content__item warranty-select">
@@ -158,7 +293,7 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                   {dropdownSelected ? dropdownSelected.name : "Choose one"}
                   <AiOutlineCaretDown />
                 </div>
-                {showDropdown && (
+                {showDropdown && !isSold && (
                   <div className="dropdown-small__content">
                     {warranties.map((option, key) => (
                       <div
@@ -176,15 +311,43 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
                 )}
               </div>
             </div>
+            <div className="create-product-modal__container--content__item">
+              <label htmlFor="description">About Product</label>
+              <textarea
+                value={_description}
+                onChange={(e) => _setDescription(e.target.value)}
+                placeholder="Enter here"
+                type="text"
+                rows={10}
+                disabled={isSold}
+                id="description"
+              />
+            </div>
             <div className="create-product-modal__container--content__item image-select">
               <label className="file-upload" htmlFor="file">
                 Upload image of product
               </label>
-              <input type="file" accept="image/*" id="file" />
+              <input
+                className="product-image__upload-save"
+                type="file"
+                accept="image/*"
+                id="file"
+              />
             </div>
           </div>
           <div className="create-product-modal__container--btn">
-            <button className="button">save</button>
+            {isSold ? (
+              <div className="sold-msg">*this product is sold </div>
+            ) : (
+              <>
+                <button onClick={handleSaveProduct} className="button save">
+                  save
+                </button>
+                <button onClick={handleDeleteProduct} className="button delete">
+                  delete
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -219,7 +382,9 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
           </div>
           <div className="product__container--content">
             <div className="product__container--content__name">{name}</div>
-            <div className="product__container--content__price">₹{price}</div>
+            <div className="product__container--content__price">
+              {price} ETH
+            </div>
           </div>
         </div>
       </div>
@@ -233,4 +398,12 @@ const Product = ({ product, warranties = [], isEdit = false }) => {
   );
 };
 
-export default Product;
+const mapStateToProps = (state) => ({ state });
+
+export default connect(mapStateToProps, {
+  changeAlertMessage,
+  changeShowAlert,
+  changeFlashMessage,
+  changeShowFlash,
+  changeShowLoader,
+})(Product);

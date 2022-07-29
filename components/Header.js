@@ -5,18 +5,39 @@ import { HiOutlineLogout } from "react-icons/hi";
 import { connect } from "react-redux";
 import DropDown from "./DropDown";
 import Utils from "./Utils";
-import { changeMetamaskStatus } from "../redux/action";
+import {
+  changeMetamaskStatus,
+  changeIsLoggedIn,
+  changeJwtToken,
+  changeUserInfo,
+  changeShowLoader,
+} from "../redux/action";
 
-const Header = ({ state, changeMetamaskStatus }) => {
-  const name = "Rahul Sinha";
-  const { metamaskStatus, metamaskConnectFunction, currentAccount } = state;
+const Header = ({
+  state,
+  changeMetamaskStatus,
+  changeIsLoggedIn,
+  changeJwtToken,
+  changeUserInfo,
+  changeShowLoader,
+}) => {
+  const { userInfo, metamaskStatus, metamaskConnectFunction, currentAccount } =
+    state;
   const [showDropDown, setShowDropDown] = useState(false);
+
+  const logout = async () => {
+    changeShowLoader(true);
+    changeJwtToken("");
+    changeUserInfo({});
+    changeIsLoggedIn(false);
+    changeShowLoader(false);
+  };
 
   const renderDropDownItems = () => (
     <>
       <div className="dropdown__container--item">
         <div className="name">
-          Hello, <b>{name}</b>
+          Hello, <b>{userInfo.username}</b>
         </div>
       </div>
       <div className="dropdown__container--item">
@@ -26,11 +47,6 @@ const Header = ({ state, changeMetamaskStatus }) => {
               <div className="metamask__address">
                 {Utils.shortHash(currentAccount)}
               </div>
-              {/* <div className="metamask__btn">
-                <button className="button metamask__btn--disconnect">
-                  Disconnect
-                </button>
-              </div> */}
             </>
           ) : (
             <>
@@ -49,9 +65,9 @@ const Header = ({ state, changeMetamaskStatus }) => {
       </div>
       <div className="dropdown__container--item">
         <div className="logout-btn">
-          <button className="button">
+          <button onClick={logout} className="button">
             Logout
-            <HiOutlineLogout size={25} />
+            <HiOutlineLogout style={{ marginLeft: "0.2rem" }} size={20} />
           </button>
         </div>
       </div>
@@ -70,14 +86,21 @@ const Header = ({ state, changeMetamaskStatus }) => {
           <Link href="/shop">
             <div className="header__container--second__item">Shop</div>
           </Link>
-          <Link href="/manage">
-            <div className="header__container--second__item">Manage</div>
-          </Link>
-          <Link href="/consumer">
-            <div className="header__container--second__item">
-              Your Purchases
-            </div>
-          </Link>
+          {userInfo.isSeller ? (
+            <>
+              <Link href="/manage">
+                <div className="header__container--second__item">Manage</div>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/consumer">
+                <div className="header__container--second__item">
+                  Your Purchases
+                </div>
+              </Link>
+            </>
+          )}
         </div>
         <div className="header__container--third">
           <div>
@@ -96,4 +119,10 @@ const Header = ({ state, changeMetamaskStatus }) => {
 };
 
 const mapStateToProps = (state) => ({ state });
-export default connect(mapStateToProps, { changeMetamaskStatus })(Header);
+export default connect(mapStateToProps, {
+  changeMetamaskStatus,
+  changeIsLoggedIn,
+  changeJwtToken,
+  changeUserInfo,
+  changeShowLoader,
+})(Header);

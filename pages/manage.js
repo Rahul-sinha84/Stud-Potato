@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
 import ArticleDisplay from "../components/articleDisplay";
 import Product from "../components/Product";
 import Request from "../components/Request";
 import RequestContainer from "../components/requestDisplay";
 import SoldProductCard from "../components/SoldProductCard";
 import Warranty from "../components/Warranty";
-import withAuth from "../components/withAuth";
+import axios from "../services/axios";
+import { changeShowLoader } from "../redux/action";
 
 const dummyRequests = [
   {
@@ -52,81 +54,6 @@ const dummyRequests = [
         "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
     },
     description: "This product is not as good as expected !!",
-  },
-];
-const warranties = [
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-  {
-    name: "Warranty 1",
-    validity: "1721769685626",
-    itemType: "Shoes",
-  },
-];
-const dummySoldProduct = [
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1621072156002-e2fccdc0b176?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80`",
-    name: "Formal Shirt",
-    price: "1099",
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1620012253295-c15cc3e65df4?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=465&q=80",
-    name: "Formal Shirt",
-    price: "1099",
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=880&q=80",
-    name: "Formal Shirt",
-    price: "1099",
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1563389234808-52344934935c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    price: "1099",
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1599900554895-5e0fc7bbc9c6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    price: "1099",
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1603251578711-3290ca1a0187?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-    name: "Formal Shirt",
-    price: "1099",
   },
 ];
 
@@ -192,22 +119,37 @@ const dummySoldProducts = [
     serialNumber: 201,
   },
 ];
-const Manage = () => {
+const Manage = ({ state, changeShowLoader }) => {
+  const [warrantyData, setWarrantyData] = useState([]);
+  const [productData, setProductData] = useState([]);
+
   const [warrantyCards, setWarrantyCards] = useState([]);
   const [productCards, setProductCards] = useState([]);
   const [requestCards, setRequestCards] = useState([]);
   const [soldProducts, setSoldProducts] = useState([]);
   const [choice, setChoice] = useState("warranty");
+  const [reloadData, setReloadData] = useState(false);
+
+  const { jwtToken } = state;
 
   const renderContent = () => {
     switch (choice) {
       case "warranty": {
-        return <ArticleDisplay isProduct={false} articles={warrantyCards} />;
+        return (
+          <ArticleDisplay
+            loadData={reloadData}
+            setLoadData={setReloadData}
+            isProduct={false}
+            articles={warrantyCards}
+          />
+        );
       }
       case "product": {
         return (
           <ArticleDisplay
-            warranty={warranties}
+            loadData={reloadData}
+            setLoadData={setReloadData}
+            warranty={warrantyData}
             isProduct={true}
             articles={productCards}
           />
@@ -225,16 +167,26 @@ const Manage = () => {
     }
   };
   const getProductCards = () => {
-    return dummySoldProducts.map((val, ind) => (
-      <div key={ind}>
-        <Product warranties={warranties} isEdit={true} product={val} />
+    return productData.map((val, ind) => (
+      <div key={val._id}>
+        <Product
+          setLoadData={setReloadData}
+          loadData={reloadData}
+          warranties={warrantyData}
+          isEdit={true}
+          product={val}
+        />
       </div>
     ));
   };
   const getWarrantyCards = () => {
-    return warranties.map((val, ind) => (
-      <div key={ind}>
-        <Warranty item={val} />
+    return warrantyData.map((val, ind) => (
+      <div key={val._id}>
+        <Warranty
+          loadData={reloadData}
+          setLoadData={setReloadData}
+          item={val}
+        />
       </div>
     ));
   };
@@ -253,12 +205,38 @@ const Manage = () => {
     ));
   };
 
+  const getData = async () => {
+    if (!jwtToken) return;
+    //getting all the warranties
+    const warrantyResponse = await axios.get("/warranty", {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    });
+    setWarrantyData(warrantyResponse.data.data);
+
+    //getting all the products
+    const productResponse = await axios.get("/product/get/user", {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    });
+    setProductData(productResponse.data.data);
+  };
+
   useEffect(() => {
-    setWarrantyCards(getWarrantyCards());
-    setProductCards(getProductCards());
-    setRequestCards(getRequestCards());
-    setSoldProducts(getSoldProductCards());
-  }, []);
+    (async () => {
+      changeShowLoader(true);
+      await getData();
+      setWarrantyCards(getWarrantyCards());
+      setProductCards(getProductCards());
+      setRequestCards(getRequestCards());
+      setSoldProducts(getSoldProductCards());
+      changeShowLoader(false);
+    })();
+  }, [jwtToken, reloadData, warrantyData.length, productData.length]);
+
+  useEffect(() => {}, []);
   return (
     <div className="manage">
       <div className="manage__container">
@@ -302,4 +280,5 @@ const Manage = () => {
   );
 };
 
-export default Manage;
+const mapStateToProps = (state) => ({ state });
+export default connect(mapStateToProps, { changeShowLoader })(Manage);

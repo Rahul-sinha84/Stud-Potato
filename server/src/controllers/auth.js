@@ -29,18 +29,22 @@ const controller = {
   },
   login: async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email } = req.body;
+      const _password = req.body.password;
 
       const user = await User.findOne({ email });
       if (!user) return utils.handleSuccess(res, "User not exists !!", {}, 404);
 
-      if (await bcrypt.compare(password, user.password)) {
+      const { password, ...withoutPassword } = user._doc;
+
+      if (await bcrypt.compare(_password, user.password)) {
         const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET);
         return utils.handleSuccess(
           res,
           "User Loggedin Successfully !!",
           {
             accessToken,
+            user: withoutPassword,
           },
           200
         );

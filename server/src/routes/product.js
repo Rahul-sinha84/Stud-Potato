@@ -30,7 +30,7 @@ const routes = (app) => {
   );
 
   route.get(
-    "/get/user/unsold",
+    "/get/user/sold",
     authController.isAuthenticated,
     productController.getAllSoldProduct
   );

@@ -419,7 +419,7 @@ $color-black: #121212;
   border: 5px solid $color-primary;
   padding: 1rem 1rem;
   background-color: $bg-color;
-  width: 25rem;
+  width: 20rem;
   &__container {
     border: 5px solid $color-secondary;
     padding: 0.3rem 0.5rem;
@@ -572,6 +572,11 @@ $color-black: #121212;
           font-size: 1.3rem;
           padding: 0.3rem 0.5rem;
         }
+        textarea {
+          font-size: 1.3rem;
+          width: 30rem;
+          padding: 0.3rem 0.5rem;
+        }
       }
       .image-select {
         // flex-direction: row;
@@ -632,8 +637,22 @@ $color-black: #121212;
       }
     }
     &--btn {
+      display: flex;
+      justify-content: space-between;
+      .sold-msg {
+        font-size: 1.2rem;
+        margin: 0 auto;
+        font-weight: 600;
+        color: $color-primary;
+      }
       button {
         background-color: $color-green;
+      }
+      .save {
+        background-color: $color-black;
+      }
+      .delete {
+        background-color: $color-primary;
       }
     }
   }
