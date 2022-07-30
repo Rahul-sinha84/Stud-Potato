@@ -60,13 +60,18 @@ const Shop = ({
 }) => {
   const { jwtToken } = state;
 
+  const [reloadData, setReloadData] = useState(false);
   const [productData, setProductData] = useState([]);
   const [products, setProducts] = useState([]);
 
   const allProducts = () => {
     return productData.map((val, ind) => (
       <div key={val._id}>
-        <Product product={val} />
+        <Product
+          loadData={reloadData}
+          setLoadData={setReloadData}
+          product={val}
+        />
       </div>
     ));
   };
@@ -91,7 +96,7 @@ const Shop = ({
       setProducts(allProducts());
       changeShowLoader(false);
     })();
-  }, [jwtToken, productData.length]);
+  }, [jwtToken, productData.length, reloadData]);
   return (
     <div className="shop">
       <div className="shop__container">
@@ -108,7 +113,15 @@ const Shop = ({
           </div>
         </div>
         <div className="shop__container--main">
-          <div className="shop__container--main__container">{products}</div>
+          <div className="shop__container--main__container">
+            {products.length ? (
+              products
+            ) : (
+              <div className="shop__container--main__container--empty-msg">
+                No Products are available now !!
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

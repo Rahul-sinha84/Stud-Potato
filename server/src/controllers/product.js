@@ -2,6 +2,7 @@ import Product from "../schema/product.js";
 import Warranty from "../schema/warranty.js";
 import Utils from "../utils.js";
 import User from "../schema/user.js";
+import Request from "../schema/request.js";
 
 const controllers = {
   createProduct: async (req, res) => {
@@ -67,8 +68,14 @@ const controllers = {
   },
   getAllProductByUser: async (req, res) => {
     try {
-      const { _id } = req.current.user;
-      await Product.find({ seller: _id })
+      const { _id, isSeller } = req.current.user;
+      let query;
+      if (isSeller) {
+        query = { seller: _id };
+      } else {
+        query = { consumer: _id };
+      }
+      await Product.find(query)
         .then(async (data) => {
           if (!data.length)
             return Utils.handleSuccess(res, "All Products !!", data, 200);
@@ -76,7 +83,20 @@ const controllers = {
           data.forEach(async (val, ind) => {
             const warranty = await Warranty.findById(val.warranty);
             const seller = await User.findById(val.seller);
-            reqData.push({ ...val._doc, warranty: warranty, seller });
+            const request = await Request.find({ product: val._id });
+            let isPending = false;
+            request.forEach((_val) => {
+              if (_val.isPending) {
+                isPending = true;
+              }
+            });
+
+            reqData.push({
+              ...val._doc,
+              warranty: warranty,
+              seller,
+              isPendingRequest: isPending,
+            });
             if (ind === data.length - 1) {
               return Utils.handleSuccess(res, "All Products !!", reqData, 200);
             }
@@ -95,10 +115,13 @@ const controllers = {
 
       await Product.find({ seller: _id, isSold: true })
         .then((data) => {
+          if (!data.length)
+            return Utils.handleSuccess(res, "All unsold product !!", data, 200);
           let reqData = [];
           data.forEach(async (val, ind) => {
             const seller = await User.findById(val.seller);
-            reqData.push({ ...val._doc, seller });
+            const consumer = await User.findById(val.consumer);
+            reqData.push({ ...val._doc, seller, consumer });
             if (ind === data.length - 1)
               return Utils.handleSuccess(
                 res,
@@ -116,6 +139,8 @@ const controllers = {
   getAllUnsoldProducts: async (req, res) => {
     try {
       await Product.find({ isSold: false }).then((data) => {
+        if (!data.length)
+          return Utils.handleSuccess(res, "All Unsold Products !!", data, 200);
         let reqData = [];
         data.forEach(async (val, ind) => {
           const seller = await User.findById(val.seller);
@@ -183,9 +208,9 @@ const controllers = {
   },
   buyProduct: async (req, res) => {
     try {
-      const { _id } = req.current.user;
+      const { _id, isSeller } = req.current.user;
       const { productId } = req.params;
-      const { tokenId } = req.body;
+      const { tokenId, transactionAddress, isReplace = false } = req.body;
 
       const product = await Product.findById(productId);
       if (!product)
@@ -196,13 +221,24 @@ const controllers = {
 
       const date = new Date();
 
-      await Product.findByIdAndUpdate(productId, {
-        ...product._doc,
-        isSold: true,
-        consumer: _id,
-        dateOfPurchase: date.getTime(),
-        tokenId,
-      })
+      let options = {};
+      if (isReplace) {
+        options = {
+          ...product._doc,
+          tokenId,
+          transactionAddress,
+        };
+      } else {
+        options = {
+          ...product._doc,
+          isSold: true,
+          consumer: _id,
+          dateOfPurchase: date.getTime(),
+          tokenId,
+          transactionAddress,
+        };
+      }
+      await Product.findByIdAndUpdate(productId, options)
         .then((_) =>
           Utils.handleSuccess(res, "Product Successfully updated !!", {}, 200)
         )

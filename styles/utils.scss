@@ -169,6 +169,11 @@ $color-black: #121212;
         font-size: 0.9rem;
       }
     }
+    &--claim-msg {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $color-secondary;
+    }
     &--btn {
       text-align: right;
       width: 100%;
@@ -400,6 +405,11 @@ $color-black: #121212;
       flex-direction: column;
       align-items: flex-end;
       justify-content: space-evenly;
+      &__msg {
+        font-size: 1.1rem;
+        text-align: center;
+        font-weight: 500;
+      }
       .request-button-one {
         background-color: $color-secondary;
         width: 10rem;

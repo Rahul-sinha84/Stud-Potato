@@ -58,6 +58,10 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    transactionAddress: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: { createdAt: true, updatedAt: true } }
 );

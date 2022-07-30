@@ -10,6 +10,8 @@ import {
   changeShowLoader,
 } from "../redux/action";
 import axios from "../services/axios";
+import utils from "./Utils";
+import fs from "fs";
 
 const Product = ({
   product,
@@ -24,7 +26,7 @@ const Product = ({
   setLoadData,
   loadData,
 }) => {
-  const { jwtToken } = state;
+  const { jwtToken, currentAccount, userInfo, contractInstance } = state;
 
   const {
     _id,
@@ -37,13 +39,17 @@ const Product = ({
     dateOfPurchase,
     isSold,
     description,
+    isPendingRequest,
     warranty = {
       validity: "2years",
       termsAndCondition:
         "Enim labore elit labore commodo esse. Aliqua exercitation in aute labore nostrud voluptate adipisicing tempor amet commodo culpa voluptate. Ut cupidatat sunt minim aliquip in irure dolor qui esse.",
     },
+    tokenId,
+    transactionAddress,
   } = product;
 
+  const [replaceOrReturn, setReplaceOrReturn] = useState("");
   const [modalShow, setModalShow] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownSelected, setDropdownSelected] = useState(warranty);
@@ -53,6 +59,7 @@ const Product = ({
   const [_modelNumber, _setModelNumber] = useState(modelNumber);
   const [_serialNumber, _setSerialNumber] = useState(serialNumber);
   const [claimModalShow, setClaimModalShow] = useState(false);
+  const [requestText, setRequestText] = useState("");
 
   const handleSaveProduct = async () => {
     if (!jwtToken) {
@@ -160,6 +167,88 @@ const Product = ({
     changeShowLoader(false);
   };
 
+  const handleBuyProduct = async () => {
+    if (!jwtToken) {
+      changeAlertMessage(
+        "Having some issues on connection, try logging out and logging in again !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    if (!contractInstance.address) {
+      changeAlertMessage(
+        "Contract is not connected yet, try reloading the page !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    if (!currentAccount) {
+      changeAlertMessage("Connect your metamask account !!");
+      changeShowAlert(true);
+      return;
+    }
+    if (parseInt(currentAccount, "hex") !== parseInt(userInfo.address, "hex")) {
+      changeAlertMessage(
+        "Please connect to your registered ethereum address !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    try {
+      changeShowLoader(true);
+      const tx = await contractInstance.safeMint(
+        currentAccount,
+        imgSrc,
+        seller.address,
+        utils.formJStoSol(
+          utils.fromDaysToSecs(warranty.validity * 365) + Date.now()
+        ),
+        utils.fromEthToWei(price),
+        {
+          from: currentAccount,
+          value: utils.fromEthToWei(price),
+        }
+      );
+
+      await tx.wait();
+
+      const tokenId = await contractInstance.getLatestTokenId();
+
+      await axios
+        .put(
+          `/product/buy/${_id}`,
+          {
+            tokenId: parseInt(tokenId._hex),
+            transactionAddress: tx.hash,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          }
+        )
+        .then((respones) => {
+          changeFlashMessage("Product Successfully Bought !!");
+          changeShowFlash(true);
+          setLoadData(!loadData);
+          changeShowLoader(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          const resp = err.response.data;
+          changeAlertMessage(resp.message);
+          changeShowLoader(false);
+          changeShowAlert(true);
+          changeShowLoader(false);
+        });
+
+      changeShowLoader(false);
+    } catch (err) {
+      changeShowLoader(false);
+      return utils.handleBCError(err);
+    }
+  };
+
   const modalContent = () => {
     if (!isEdit)
       return (
@@ -188,6 +277,16 @@ const Product = ({
                   <div className="product-modal__container--product-info__about--seller">
                     <b>Serial number:</b> {serialNumber}
                   </div>
+                  {isSold && (
+                    <>
+                      <div className="product-modal__container--product-info__about--seller">
+                        <b>Token ID:</b> {tokenId}
+                      </div>
+                      <div className="product-modal__container--product-info__about--seller">
+                        <a href={``}>Link to the Transaction</a>
+                      </div>
+                    </>
+                  )}
                   <div className="product-modal__container--product-info__about--desc">
                     <div className="product-modal__container--product-info__about--desc__title">
                       About Product
@@ -212,23 +311,37 @@ const Product = ({
             </div>
             <div className="product-modal__container--btn">
               {isSold ? (
-                dateOfPurchase + 10 * 24 * 60 * 60 >= Date.now() ? (
+                isPendingRequest ? (
+                  <div className="product-modal__container--claim-msg">
+                    *Currenty this product is in claim...
+                  </div>
+                ) : new Date(dateOfPurchase).setDate(
+                    new Date(dateOfPurchase).getDate() + 10
+                  ) <= new Date().getTime() ? (
                   <button
-                    onClick={() => setClaimModalShow(true)}
+                    onClick={() => {
+                      setReplaceOrReturn("return");
+                      setClaimModalShow(true);
+                    }}
                     className="button return"
                   >
                     return
                   </button>
                 ) : (
                   <button
-                    onClick={() => setClaimModalShow(true)}
+                    onClick={() => {
+                      setReplaceOrReturn("replace");
+                      setClaimModalShow(true);
+                    }}
                     className="button replace"
                   >
                     replace
                   </button>
                 )
               ) : (
-                <button className="button">buy now</button>
+                <button onClick={handleBuyProduct} className="button">
+                  buy now
+                </button>
               )}
             </div>
           </div>
@@ -353,6 +466,67 @@ const Product = ({
       </div>
     );
   };
+
+  const handleReturnOrReplace = async () => {
+    if (!replaceOrReturn) {
+      changeAlertMessage("Something error occurred !!");
+      changeShowAlert(true);
+      return;
+    }
+    if (!jwtToken) {
+      changeAlertMessage(
+        "Having some issues on connection, try logging out and logging in again !!"
+      );
+      changeShowAlert(true);
+      return;
+    }
+    if (!requestText) {
+      changeAlertMessage("Please enter the reason for requesting !!");
+      changeShowAlert(true);
+      return;
+    }
+    try {
+      await axios
+        .post(
+          "/request",
+          {
+            tag: replaceOrReturn,
+            description: requestText,
+            product: _id,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          }
+        )
+        .then((res) => {
+          changeFlashMessage("Request is sent to the seller successfully !!");
+          changeShowFlash(true);
+          setReplaceOrReturn("");
+          setRequestText("");
+          setClaimModalShow(false);
+          setModalShow(false);
+          setLoadData(!loadData);
+        })
+        .catch((err) => {
+          console.log(err);
+          const resp = err.response.data;
+          changeAlertMessage(resp.message);
+          changeShowLoader(false);
+          changeShowAlert(true);
+          changeShowLoader(false);
+        });
+    } catch (err) {
+      console.log(err);
+      const resp = err.response.data;
+      changeAlertMessage(resp.message);
+      changeShowLoader(false);
+      changeShowAlert(true);
+      changeShowLoader(false);
+    }
+  };
+
   const claimModalContent = () => (
     <div className="claim-modal">
       <div className="claim-modal__container">
@@ -360,8 +534,16 @@ const Product = ({
           Please fill the reason for claiming the request
         </div>
         <div className="claim-modal__container--content">
-          <textarea rows="5" placeholder="Enter reason here" required />
-          <button className="button">Submit</button>
+          <textarea
+            value={requestText}
+            onChange={(e) => setRequestText(e.target.value)}
+            rows="5"
+            placeholder="Enter reason here"
+            required
+          />
+          <button onClick={handleReturnOrReplace} className="button">
+            Submit
+          </button>
         </div>
       </div>
     </div>

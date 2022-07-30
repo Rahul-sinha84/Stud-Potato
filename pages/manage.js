@@ -9,54 +9,6 @@ import Warranty from "../components/Warranty";
 import axios from "../services/axios";
 import { changeShowLoader } from "../redux/action";
 
-const dummyRequests = [
-  {
-    product: {
-      imgSrc:
-        "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    },
-    description:
-      "Commodo sunt est enim nostrud excepteur officia in veniam incididunt consectetur laborum magna ad.",
-  },
-  {
-    product: {
-      imgSrc:
-        "https://images.unsplash.com/photo-1579298245158-33e8f568f7d3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHwwfDB8YmxhY2t8&auto=format&fit=crop&w=500&q=60",
-    },
-    description:
-      "Qui irure deserunt ullamco velit. Fugiat labore mollit labore irure dolore consequat quis reprehenderit cillum. Enim dolore consequat nisi voluptate proident. Occaecat do ex excepteur qui sunt.",
-  },
-  {
-    product: {
-      imgSrc:
-        "https://images.unsplash.com/photo-1518894781321-630e638d0742?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8c2hvZXN8ZW58MHwyfDB8YmxhY2t8&auto=format&fit=crop&w=500&q=60",
-    },
-    description:
-      "Anim enim proident sint officia tempor do amet irure magna ullamco velit cupidatat. Eu non non sint aute irure fugiat sint deserunt excepteur occaecat magna est. Nostrud amet excepteur labore minim fugiat reprehenderit ullamco. Non deserunt aute consectetur dolore cupidatat pariatur consectetur do aute ipsum exercitation ipsum enim. Eiusmod occaecat excepteur dolor amet aute minim.",
-  },
-  {
-    product: {
-      imgSrc:
-        "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    },
-    description: "This product is not as good as expected !!",
-  },
-  {
-    product: {
-      imgSrc:
-        "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    },
-    description: "This product is not as good as expected !!",
-  },
-  {
-    product: {
-      imgSrc:
-        "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    },
-    description: "This product is not as good as expected !!",
-  },
-];
-
 const dummySoldProducts = [
   {
     imgSrc:
@@ -122,6 +74,8 @@ const dummySoldProducts = [
 const Manage = ({ state, changeShowLoader }) => {
   const [warrantyData, setWarrantyData] = useState([]);
   const [productData, setProductData] = useState([]);
+  const [requestData, setRequestData] = useState([]);
+  const [unsoldData, setUnsoldData] = useState([]);
 
   const [warrantyCards, setWarrantyCards] = useState([]);
   const [productCards, setProductCards] = useState([]);
@@ -156,10 +110,22 @@ const Manage = ({ state, changeShowLoader }) => {
         );
       }
       case "claim": {
-        return <RequestContainer requests={requestCards} />;
+        return (
+          <RequestContainer
+            loadData={reloadData}
+            setLoadData={setReloadData}
+            requests={requestCards}
+          />
+        );
       }
       case "soldProducts": {
-        return <RequestContainer requests={soldProducts} />;
+        return (
+          <RequestContainer
+            loadData={reloadData}
+            setLoadData={setReloadData}
+            requests={soldProducts}
+          />
+        );
       }
       default: {
         return null;
@@ -191,16 +157,20 @@ const Manage = ({ state, changeShowLoader }) => {
     ));
   };
   const getRequestCards = () => {
-    return dummyRequests.map((val, ind) => (
-      <div key={ind}>
+    return requestData.map((val, ind) => (
+      <div key={val._id}>
         <Request request={val} />
       </div>
     ));
   };
   const getSoldProductCards = () => {
-    return dummySoldProducts.map((val, ind) => (
-      <div key={ind}>
-        <SoldProductCard SoldProducts={val} />
+    return unsoldData.map((val, ind) => (
+      <div key={val._id}>
+        <SoldProductCard
+          loadData={reloadData}
+          setLoadData={setReloadData}
+          SoldProducts={val}
+        />
       </div>
     ));
   };
@@ -222,6 +192,23 @@ const Manage = ({ state, changeShowLoader }) => {
       },
     });
     setProductData(productResponse.data.data);
+
+    //getting all the request for the seller
+    const requestResponse = await axios.get("/request", {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    });
+    setRequestData(requestResponse.data.data);
+
+    //getting all the unsold product
+    const unSoldResponse = await axios.get("/product/get/user/sold", {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    });
+
+    setUnsoldData(unSoldResponse.data.data);
   };
 
   useEffect(() => {
@@ -265,14 +252,14 @@ const Manage = ({ state, changeShowLoader }) => {
           >
             <div>Requests</div>
           </div>
-          <div
+          {/* <div
             onClick={() => setChoice("soldProducts")}
             className={`${
               choice === "soldProducts" ? "active" : ""
             } manage__container--menu__item`}
           >
             <div className="menu-last">Products Sold</div>
-          </div>
+          </div> */}
         </div>
         <div className="manage__container--content">{renderContent()}</div>
       </div>

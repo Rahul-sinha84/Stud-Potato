@@ -1,70 +1,24 @@
 import React, { useState, useEffect } from "react";
 import ArticleDisplay from "../components/articleDisplay";
 import Product from "../components/Product";
-const dummySoldProducts = [
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1563389234808-52344934935c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    consumer: "Ram Lal",
-    dateOfPurchase: "1721769685626",
-    price: 2000,
-    isInValidity: true,
-    priceWithdrawn: true,
-    modelNumber: 12,
-    serialNumber: 201,
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1563389234808-52344934935c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    consumer: "Ram Lal",
-    dateOfPurchase: "1721769685626",
-    price: 2000,
-    isInValidity: true,
-    priceWithdrawn: true,
-    modelNumber: 12,
-    serialNumber: 201,
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1563389234808-52344934935c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    consumer: "Ram Lal",
-    dateOfPurchase: "1721769685626",
-    price: 2000,
-    isInValidity: true,
-    priceWithdrawn: true,
-    modelNumber: 12,
-    serialNumber: 201,
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1563389234808-52344934935c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    consumer: "Ram Lal",
-    dateOfPurchase: "1721769685626",
-    price: 2000,
-    isInValidity: true,
-    priceWithdrawn: true,
-    modelNumber: 12,
-    serialNumber: 201,
-  },
-  {
-    imgSrc:
-      "https://images.unsplash.com/photo-1563389234808-52344934935c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80",
-    name: "Formal Shirt",
-    consumer: "Ram Lal",
-    dateOfPurchase: "1721769685626",
-    price: 2000,
-    isInValidity: true,
-    priceWithdrawn: true,
-    modelNumber: 12,
-    serialNumber: 201,
-  },
-];
+import { connect } from "react-redux";
+import {
+  changeAlertMessage,
+  changeShowAlert,
+  changeShowLoader,
+} from "../redux/action";
+import axios from "../services/axios";
 
-const Consumer = () => {
+const Consumer = ({
+  state,
+  changeAlertMessage,
+  changeShowAlert,
+  changeShowLoader,
+}) => {
+  const { jwtToken } = state;
+
+  const [reloadData, setReloadData] = useState(false);
+  const [productData, setProductData] = useState([]);
   const [choice, setChoice] = useState("products");
   const [products, setProducts] = useState([]);
 
@@ -75,18 +29,40 @@ const Consumer = () => {
           isConsumer={true}
           isProduct={true}
           articles={products}
+          setLoadData={setReloadData}
+          loadData={reloadData}
         />
       );
   };
 
+  const getData = async () => {
+    if (!jwtToken) return;
+
+    const productResponse = await axios.get("/product/get/user", {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+    });
+    setProductData(productResponse.data.data);
+  };
+
   useEffect(() => {
-    setProducts(getProductCards());
-  }, []);
+    (async () => {
+      changeShowLoader(true);
+      await getData();
+      setProducts(getProductCards());
+      changeShowLoader(false);
+    })();
+  }, [jwtToken, productData.length, reloadData]);
 
   const getProductCards = () => {
-    return dummySoldProducts.map((val, ind) => (
+    return productData.map((val, ind) => (
       <div key={ind}>
-        <Product product={val} />
+        <Product
+          loadData={reloadData}
+          setLoadData={setReloadData}
+          product={val}
+        />
       </div>
     ));
   };
@@ -118,4 +94,9 @@ const Consumer = () => {
   );
 };
 
-export default Consumer;
+const mapStateToProps = (state) => ({ state });
+export default connect(mapStateToProps, {
+  changeAlertMessage,
+  changeShowAlert,
+  changeShowLoader,
+})(Consumer);

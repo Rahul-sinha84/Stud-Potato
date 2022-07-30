@@ -32,7 +32,7 @@ contract StudPotato is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
         address _seller,
         uint _validity,
         uint _price
-    ) public payable onlyOwner {
+    ) public payable {
         _tokenIdCounter.increment();
         uint256 tokenId = _tokenIdCounter.current();
 

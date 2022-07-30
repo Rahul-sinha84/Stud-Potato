@@ -30,9 +30,12 @@ const controller = {
       if (isSeller) {
         await Request.find({ seller: _id })
           .then(async (data) => {
+            if (!data.length)
+              return Utils.handleSuccess(res, "All Request !!", data, 200);
             let reqData = [];
             data.forEach(async (val, ind) => {
               const product = await Product.findById(val.product);
+              console.log(product);
               reqData.push({ ...val._doc, product });
               if (ind === data.length - 1)
                 Utils.handleSuccess(res, "All Request !!", reqData, 200);
@@ -56,6 +59,15 @@ const controller = {
         return Utils.handleSuccess(res, "Only Seller required !!", {}, 401);
 
       const request = await Request.findById(requestId);
+
+      if (!request.isPending)
+        return Utils.handleSuccess(
+          res,
+          "Already responded to this request !!",
+          {},
+          400
+        );
+
       if (!request)
         return Utils.handleSuccess(res, "No Request found !!", {}, 404);
       if (_id != request.seller.toString())
@@ -87,13 +99,13 @@ const controller = {
         } else {
           request.isAccept = false;
           request.isPending = false;
-          request.msgBySeller = "Reuturn request declined by seller";
+          request.msgBySeller = "Return request declined by seller";
           request.save();
           return Utils.handleSuccess(
             res,
             "Return request declined by seller !!",
             {},
-            403
+            200
           );
         }
       } else {
@@ -105,6 +117,7 @@ const controller = {
             },
             seller: product.seller,
             modelNumber: product.modelNumber,
+            isSold: false,
           }).exec();
           // const
           if (!productWithSameModel.length) {
@@ -117,13 +130,20 @@ const controller = {
               res,
               "Replacement request declined by seller due to inavailability of product !!",
               {},
-              403
+              200
             );
           }
           request.isAccept = true;
           request.isPending = false;
           request.msgBySeller = "Replacement request is accepted by seller";
           request.save();
+
+          let newProduct = productWithSameModel[0];
+          newProduct.isSold = true;
+          newProduct.consumer = product.consumer;
+          newProduct.dateOfPurchase = product.dateOfPurchase;
+          newProduct.save();
+
           return Utils.handleSuccess(
             res,
             "Replacement request is accepted !!",
@@ -139,7 +159,7 @@ const controller = {
             res,
             "Replacement request declined by seller !!",
             {},
-            403
+            200
           );
         }
       }
