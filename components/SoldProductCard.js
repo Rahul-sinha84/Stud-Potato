@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Utils from "./Utils";
 import { connect } from "react-redux";
 import {
@@ -9,7 +9,6 @@ import {
   changeShowLoader,
 } from "../redux/action";
 import utils from "./Utils";
-import { USER_INFO } from "../redux/types";
 
 const SoldProductCard = ({
   SoldProducts,
@@ -30,13 +29,16 @@ const SoldProductCard = ({
     price,
     priceWithdrawn,
     isInValidity,
+    warranty,
     tokenId,
   } = SoldProducts;
 
   const { currentAccount, contractInstance, userInfo } = state;
-
+  useEffect(() => {
+    setLoadData(!loadData);
+  }, []);
   if (
-    new Date(dateOfPurchase).setDate(new Date(dateOfPurchase).getDate() + 10) >=
+    new Date(dateOfPurchase).setDate(new Date(dateOfPurchase).getDate() + 10) <=
     Date.now()
   )
     return null;
@@ -98,7 +100,9 @@ const SoldProductCard = ({
           </div>
         </div>
         <div className="sold-products__container--fourth">
-          {isInValidity ? (
+          {new Date(dateOfPurchase).setFullYear(
+            new Date(dateOfPurchase).getFullYear() + warranty.validity
+          ) >= new Date() ? (
             <div className="sold-products__container--fourth__denial-msg">
               Product is in validity period
             </div>

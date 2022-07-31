@@ -11,7 +11,7 @@ function MyApp({ Component, pageProps }) {
       <PersistGate persistor={persistor}>
         <Layout>
           <Head>
-            <title>Next-Hardhat template</title>
+            <title>Stud-Potato</title>
           </Head>
           <Component {...pageProps} />
         </Layout>

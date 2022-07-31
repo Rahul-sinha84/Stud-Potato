@@ -159,7 +159,11 @@ const Manage = ({ state, changeShowLoader }) => {
   const getRequestCards = () => {
     return requestData.map((val, ind) => (
       <div key={val._id}>
-        <Request request={val} />
+        <Request
+          dataLoad={reloadData}
+          setDataLoad={setReloadData}
+          request={val}
+        />
       </div>
     ));
   };
@@ -252,14 +256,14 @@ const Manage = ({ state, changeShowLoader }) => {
           >
             <div>Requests</div>
           </div>
-          {/* <div
+          <div
             onClick={() => setChoice("soldProducts")}
             className={`${
               choice === "soldProducts" ? "active" : ""
             } manage__container--menu__item`}
           >
             <div className="menu-last">Products Sold</div>
-          </div> */}
+          </div>
         </div>
         <div className="manage__container--content">{renderContent()}</div>
       </div>

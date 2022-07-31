@@ -59,6 +59,12 @@ const routes = (app) => {
     productController.buyProduct
   );
 
+  route.put(
+    "/action/replace",
+    authController.isAuthenticated,
+    productController.replaceProduct
+  );
+
   app.use("/api/product", route);
 };
 

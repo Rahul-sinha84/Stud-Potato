@@ -283,7 +283,13 @@ const Product = ({
                         <b>Token ID:</b> {tokenId}
                       </div>
                       <div className="product-modal__container--product-info__about--seller">
-                        <a href={``}>Link to the Transaction</a>
+                        <a
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={`https://mumbai.polygonscan.com/tx/${transactionAddress}`}
+                        >
+                          Link to the Transaction
+                        </a>
                       </div>
                     </>
                   )}
@@ -335,7 +341,7 @@ const Product = ({
                     }}
                     className="button replace"
                   >
-                    replace
+                    Claim
                   </button>
                 )
               ) : (

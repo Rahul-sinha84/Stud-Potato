@@ -79,14 +79,6 @@ const Consumer = ({
           >
             <div>Products</div>
           </div>
-          <div
-            onClick={() => setChoice("requests")}
-            className={`${
-              choice === "requests" ? "active" : ""
-            } manage__container--menu__item`}
-          >
-            <div className="menu-last">Requests History</div>
-          </div>
         </div>
         <div className="manage__container--content">{renderContainer()}</div>
       </div>

@@ -1,8 +1,19 @@
+import mongoose from "mongoose";
 import Product from "../schema/product.js";
 import Warranty from "../schema/warranty.js";
 import Utils from "../utils.js";
 import User from "../schema/user.js";
 import Request from "../schema/request.js";
+import Nexmo from "nexmo";
+
+// initialising nexmo for sending messages
+const nexmo = new Nexmo(
+  {
+    apiKey: "255bea3d",
+    apiSecret: "SL0AGvZGg0vPINTC",
+  },
+  { debug: true }
+);
 
 const controllers = {
   createProduct: async (req, res) => {
@@ -121,7 +132,8 @@ const controllers = {
           data.forEach(async (val, ind) => {
             const seller = await User.findById(val.seller);
             const consumer = await User.findById(val.consumer);
-            reqData.push({ ...val._doc, seller, consumer });
+            const warranty = await Warranty.findById(val.warranty);
+            reqData.push({ ...val._doc, seller, consumer, warranty });
             if (ind === data.length - 1)
               return Utils.handleSuccess(
                 res,
@@ -208,7 +220,7 @@ const controllers = {
   },
   buyProduct: async (req, res) => {
     try {
-      const { _id, isSeller } = req.current.user;
+      const { _id, isSeller, phone } = req.current.user;
       const { productId } = req.params;
       const { tokenId, transactionAddress, isReplace = false } = req.body;
 
@@ -239,9 +251,74 @@ const controllers = {
         };
       }
       await Product.findByIdAndUpdate(productId, options)
-        .then((_) =>
-          Utils.handleSuccess(res, "Product Successfully updated !!", {}, 200)
-        )
+        .then((_) => {
+          //sending confirmation message to consumer
+          // for now only whitelisted numbers can recieve the message as we are using the trial version of nexmo
+
+          const from = "Vonage APIs";
+          const to = `91${phone}`;
+          const text = `Congratulations for your new purchase from Stud-Potato, of serial number: ${product.serialNumber} and of id: ${product._id}`;
+
+          nexmo.message.sendSms(from, to, text, (err, responseData) => {
+            if (err) {
+              console.log(err);
+            } else {
+              if (responseData.messages[0]["status"] === "0") {
+                console.log("Message sent successfully.");
+              } else {
+                console.log(
+                  `Message failed with error: ${responseData.messages[0]["error-text"]}`
+                );
+              }
+            }
+          });
+
+          return Utils.handleSuccess(
+            res,
+            "Product Successfully updated !!",
+            {},
+            200
+          );
+        })
+        .catch((err) => Utils.handleError(res, err, 500));
+    } catch (err) {
+      return Utils.handleError(res, err, 500);
+    }
+  },
+  replaceProduct: async (req, res) => {
+    try {
+      const { isSeller } = req.current.user;
+      if (!isSeller)
+        return Utils.handleSuccess(res, "Only Seller Required !!", {}, 401);
+      const { oldProductId, newProductId, transactionAddress, tokenId } =
+        req.body;
+      const oldProductIdMongoose = mongoose.Types.ObjectId(oldProductId);
+      const newProductIdMongoose = mongoose.Types.ObjectId(newProductId);
+      await Product.findById(oldProductIdMongoose)
+        .then(async (oldProduct) => {
+          const options = {
+            isSold: true,
+            transactionAddress,
+            tokenId,
+            dateOfPurchase: oldProduct.dateOfPurchase,
+            consumer: mongoose.Types.ObjectId(oldProduct.consumer),
+          };
+          const requests = await Request.find({ product: oldProduct._id });
+          requests.forEach(async ({ _id }) => {
+            await Request.findByIdAndRemove(_id);
+          });
+
+          await Product.findByIdAndRemove(oldProductIdMongoose);
+          await Product.findByIdAndUpdate(newProductIdMongoose, options).then(
+            (response) =>
+              Utils.handleSuccess(
+                res,
+                "Product successfully replaced !!",
+                {},
+                200
+              )
+          );
+        })
         .catch((err) => Utils.handleError(res, err, 500));
     } catch (err) {
       return Utils.handleError(res, err, 500);

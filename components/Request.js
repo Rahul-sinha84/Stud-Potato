@@ -80,13 +80,22 @@ const Request = ({
         )
         .then(async (response) => {
           const newProduct = response.data.data;
-          console.log(newProduct, !newProduct._id);
+          console.log(newProduct);
           if (!newProduct._id) {
             changeAlertMessage("No Product is available for replacement !!");
             changeShowAlert(true);
             return;
           }
-          console.log(product, product.tokenId);
+          // console.log(product, product.tokenId);
+          const sellerAddress = await contractInstance.getSellerFromTokenId(
+            product.tokenId
+          );
+          console.log(
+            sellerAddress === currentAccount,
+            currentAccount,
+            sellerAddress
+          );
+
           const tx = await contractInstance.replaceProduct(
             product.tokenId,
             newProduct.imgSrc,
@@ -96,15 +105,25 @@ const Request = ({
           const tokenId = await contractInstance.getLatestTokenId();
 
           await axios
-            .post(`/product/buy/${newProduct._id}`, {
-              tokenId: parseInt(tokenId._hex),
-              transactionAddress: tx.hash,
-              isReplace: true,
-            })
+            .put(
+              `/product/action/replace`,
+              {
+                tokenId: parseInt(tokenId._hex),
+                transactionAddress: tx.hash,
+                oldProductId: product._id,
+                newProductId: newProduct._id,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${jwtToken}`,
+                },
+              }
+            )
             .then((res) => {
               changeFlashMessage("Successfully Replaced this request  !!");
               changeShowFlash(true);
               setDataLoad(!dataLoad);
+              setShowModal(false);
             })
             .catch((err) => {
               console.log(err);
@@ -112,6 +131,7 @@ const Request = ({
               changeAlertMessage(resp.message);
               changeShowLoader(false);
               changeShowAlert(true);
+              setShowModal(false);
               changeShowLoader(false);
             });
         });
@@ -147,11 +167,13 @@ const Request = ({
           changeFlashMessage("Successfully resolved this request as repair !!");
           changeShowFlash(true);
           setDataLoad(!dataLoad);
+          setShowModal(false);
         })
         .catch((err) => {
           console.log(err);
           const resp = err.response.data;
           changeAlertMessage(resp.message);
+          setShowModal(false);
           changeShowLoader(false);
           changeShowAlert(true);
           changeShowLoader(false);
@@ -226,6 +248,19 @@ const Request = ({
     }
   };
 
+  const handleReject = async () => {
+    try {
+
+    } catch(err) {
+      console.log(err);
+            const resp = err.response.data;
+            changeAlertMessage(resp.message);
+            changeShowLoader(false);
+            changeShowAlert(true);
+            changeShowLoader(false);
+    }
+  }
+
   return (
     <>
       <div className="request">
@@ -254,7 +289,7 @@ const Request = ({
                 >
                   accept
                 </button>
-                <button className="button request-button-two">reject</button>
+                <button onClick={handleReject} className="button request-button-two">reject</button>
               </>
             ) : (
               <div className="request__container--btns__msg">

@@ -138,16 +138,13 @@ const controller = {
           request.msgBySeller = "Replacement request is accepted by seller";
           request.save();
 
-          let newProduct = productWithSameModel[0];
-          newProduct.isSold = true;
-          newProduct.consumer = product.consumer;
-          newProduct.dateOfPurchase = product.dateOfPurchase;
-          newProduct.save();
-
           return Utils.handleSuccess(
             res,
             "Replacement request is accepted !!",
-            productWithSameModel[0],
+            {
+              _id: productWithSameModel[0]._id,
+              imgSrc: productWithSameModel[0].imgSrc,
+            },
             200
           );
         } else {
