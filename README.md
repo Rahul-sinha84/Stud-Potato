@@ -1,34 +1,129 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Stud-Potato
 
-## Getting Started
+A Blockchain based e-commerce web app wherein people get their product delivered physically as well as digitally in the form of a NFT. Warranties are stored in the form of NFTs too. A customer can buy, replace or claim warranty for their products easily.
+Also it is easy for the seller to add or edit their products and warranties as well as handle warranty claim requests.
 
-First, run the development server:
+## Tech Stack
+
+**Client:** NextJS, Redux, SASS, ethersJS.
+
+**Server:** NodeJS, ExpressJS, MongoDB.
+
+**Smart-Contract**: Solidity, hardhat.
+
+## Run Locally
+
+Clone the project
 
 ```bash
-npm run dev
-# or
+  git clone https://github.com/Rahul-sinha84/Stud-Potato.git
+```
+
+Go to the project directory
+
+```bash
+  cd Stud-Potato
+```
+
+Install dependencies
+
+```bash
+  yarn
+```
+
+## Installation
+
+To install this application locally, please follow the steps below:
+
+The project is of three components in total.
+
+1. NodeJS Server
+2. Smart-contracts
+3. NextJS app
+
+### Smart-Contract
+
+First we need to deploy our smart-contract locally, for that first of all we need to install all the dependencies.
+
+```bash
+  cd smart-contracts
+  yarn
+```
+
+This will install all the dependencies in `smart-contract` folder.
+
+Now we need to run the blockchain locally, for that:
+
+```bash
+npx hardhat node
+```
+
+Now in seperate terminal, deploy the contract to this local chain
+
+```bash
+npx hardhat --network localhost run scripts/deploy.js
+```
+
+### NodeJS Server
+
+First we need to install all the dependencies in server file.
+
+```bash
+cd server
+yarn
+```
+
+To start the local server, run the following command in your terminal in the `server` folder
+
+```bash
+yarn start
+```
+
+### NextJS application
+
+In the root folder itself install all the dependencies
+
+```bash
+yarn
+```
+
+To run the nextJS server run the following command
+
+```bash
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment Variables
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+This project contains two environment files in total.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+#### `server` file
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+`MONGO_URI`: mongoDB url
 
-## Learn More
+`PORT`: port on which our server runs
 
-To learn more about Next.js, take a look at the following resources:
+`ACCESS_TOKEN_SECRET`: for JWT based authentication
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`SMS_API_KEY`: Nexmo sms api for sending sms to the users
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+#### root
 
-## Deploy on Vercel
+as `.env.local` in the root directory
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`NEXT_PUBLIC_CONTRACT_ADDRESS`: Deployed Contract address
+`NEXT_PUBLIC_CLOUD_NAME`: for cloudinary
+`NEXT_PUBLIC_UPLOAD_PRESET`: for cloudinary
+`NEXT_PUBLIC_NFTSTORAGE_API_KEY`: NFT storage api
+`NEXT_PUBLIC_NETWORK_ID`: Chain ID on which contract is deployed
+`NEXT_PUBLIC_NODE_API`: NodeJS Server URL
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Demo
+
+You can access the link of the deployed website: https://stud-potato.vercel.app/
+
+## Authors
+
+- [@stuti612](https://github.com/stuti612)
+- [@rajrawat37](https://github.com/rajrawat37)
+- [@Rahul-sinha84](https://github.com/Rahul-sinha84)
