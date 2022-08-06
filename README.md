@@ -112,10 +112,15 @@ This project contains two environment files in total.
 as `.env.local` in the root directory
 
 `NEXT_PUBLIC_CONTRACT_ADDRESS`: Deployed Contract address
+
 `NEXT_PUBLIC_CLOUD_NAME`: for cloudinary
+
 `NEXT_PUBLIC_UPLOAD_PRESET`: for cloudinary
+
 `NEXT_PUBLIC_NFTSTORAGE_API_KEY`: NFT storage api
+
 `NEXT_PUBLIC_NETWORK_ID`: Chain ID on which contract is deployed
+
 `NEXT_PUBLIC_NODE_API`: NodeJS Server URL
 
 ## Demo
