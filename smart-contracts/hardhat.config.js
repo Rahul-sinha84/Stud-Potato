@@ -1,4 +1,8 @@
 require("@nomiclabs/hardhat-waffle");
+require("dotenv").config();
+
+const apiURL = process.env.API_URL;
+const privateKey = process.env.PRIVATE_KEY;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -20,5 +24,13 @@ module.exports = {
   solidity: "0.8.4",
   paths: {
     artifacts: "../artifacts",
+  },
+  defaultNetwork: "polygon_mumbai",
+  networks: {
+    hardhat: {},
+    polygon_mumbai: {
+      url: apiURL,
+      accounts: [`0x${privateKey}`],
+    },
   },
 };
