@@ -38,10 +38,16 @@ const SoldProductCard = ({
     setLoadData(!loadData);
   }, []);
   if (
-    new Date(dateOfPurchase).setDate(new Date(dateOfPurchase).getDate() + 10) <=
+    new Date(dateOfPurchase).setDate(new Date(dateOfPurchase).getDate() + 10) >=
     Date.now()
   )
-    return null;
+    return (
+      <div className="sold-products-empty">
+        Either no products are sold or currenty they are in their {"'return'"}{" "}
+        period, once they are out of their return period you can withdraw the
+        money out !!{" "}
+      </div>
+    );
 
   const handleWithdraw = async () => {
     if (!contractInstance.address) {

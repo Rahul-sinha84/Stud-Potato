@@ -249,17 +249,37 @@ const Request = ({
   };
 
   const handleReject = async () => {
+    const isHeSure = confirm("Are you sure to reject this request ??");
+    if (!isHeSure) return;
     try {
-
-    } catch(err) {
+      changeShowLoader(true);
+      await axios
+        .put(
+          "/request/action",
+          {
+            requestId: _id,
+            isAccept: false,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          }
+        )
+        .then((_) => {
+          changeFlashMessage("Successfully rejected the claim !!");
+          changeShowFlash(true);
+          changeShowLoader(false);
+        });
+    } catch (err) {
       console.log(err);
-            const resp = err.response.data;
-            changeAlertMessage(resp.message);
-            changeShowLoader(false);
-            changeShowAlert(true);
-            changeShowLoader(false);
+      const resp = err.response.data;
+      changeAlertMessage(resp.message);
+      changeShowLoader(false);
+      changeShowAlert(true);
+      changeShowLoader(false);
     }
-  }
+  };
 
   return (
     <>
@@ -289,7 +309,12 @@ const Request = ({
                 >
                   accept
                 </button>
-                <button onClick={handleReject} className="button request-button-two">reject</button>
+                <button
+                  onClick={handleReject}
+                  className="button request-button-two"
+                >
+                  reject
+                </button>
               </>
             ) : (
               <div className="request__container--btns__msg">

@@ -19,11 +19,14 @@ import {
   changeMetamaskStatus,
   changeNetworkId,
   changeShowLoader,
+  changeAlertMessage,
+  changeShowAlert,
 } from "../redux/action";
 import Header from "./Header";
 import Loader from "./Loader";
 import Alert from "./modals/alertModal";
 import Flash from "./modals/flashModal";
+import utils from "./Utils";
 
 const Layout = ({
   children,
@@ -36,6 +39,8 @@ const Layout = ({
   changeShowLoader,
   state,
   router,
+  changeAlertMessage,
+  changeShowAlert,
 }) => {
   const {
     contractInstance,
@@ -81,6 +86,27 @@ const Layout = ({
     //    listenToEvents(contract);
   }, [currentAccount, contractInstance, load]);
 
+  //for making sure that the user is in correct network
+  useEffect(() => {
+    (async () => {
+      //for checking the chain-id;
+      if (
+        networkId !== undefined &&
+        `${networkId}` !== process.env.NEXT_PUBLIC_NETWORK_ID
+      ) {
+        changeAlertMessage(
+          `Please connect to '${utils.getChainNameFromId(
+            process.env.NEXT_PUBLIC_NETWORK_ID
+          )}'`
+        );
+        changeShowAlert(true);
+        return;
+      } else {
+        changeShowAlert(false);
+      }
+    })();
+  }, [networkId, currentAccount, router.pathname]);
+
   const getQuotes = async () => {
     const response = await axios.get(
       "https://gist.githubusercontent.com/camperbot/5a022b72e96c4c9585c32bf6a75f62d9/raw/e3c6895ce42069f0ee7e991229064f167fe8ccdc/quotes.json"
@@ -109,6 +135,16 @@ const Layout = ({
   return (
     <>
       <>
+        {networkId !== undefined &&
+        `${networkId}` !== process.env.NEXT_PUBLIC_NETWORK_ID ? (
+          <div className="network-warning-msg">
+            You are currently into wrong chain network, Please connect to{" "}
+            {utils.getChainNameFromId(process.env.NEXT_PUBLIC_NETWORK_ID)},
+            otherwise the application will crash !!
+          </div>
+        ) : (
+          <></>
+        )}
         {router.pathname !== "/login" && router.pathname !== "/signup" && (
           <Header />
         )}
@@ -146,5 +182,7 @@ export default withRouter(
     changeNetworkId,
     changeMetamaskStatus,
     changeShowLoader,
+    changeAlertMessage,
+    changeShowAlert,
   })(Layout)
 );

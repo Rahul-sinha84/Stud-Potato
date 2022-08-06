@@ -57,5 +57,42 @@ const utils = {
     const str = err.data.message.split(":")[2];
     return alert(str);
   },
+  getChainNameFromId: (id) => {
+    let chainName = "";
+    switch (id) {
+      case "1": {
+        chainName = "Ethereum main network";
+        break;
+      }
+      case "3": {
+        chainName = "Ropsten: Ethereum test network";
+        break;
+      }
+      case "4": {
+        chainName = "Rinkeby: Ethereum test network";
+        break;
+      }
+      case "42": {
+        chainName = "Koval: Ethereum test network";
+        break;
+      }
+      case "56": {
+        chainName = "Binance smart chain main network";
+        break;
+      }
+      case "137": {
+        chainName = "Polygon Main network";
+        break;
+      }
+      case "80001": {
+        chainName = "Polygon Test network Mumbai";
+        break;
+      }
+      default: {
+        chainName = "Your local environment network";
+      }
+    }
+    return chainName;
+  },
 };
 export default utils;

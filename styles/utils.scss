@@ -491,6 +491,11 @@ $color-black: #121212;
 .sold-products {
   margin: 1rem auto;
   box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.261);
+  &-empty {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
   &__container {
     padding: 1rem 2rem;
     display: flex;

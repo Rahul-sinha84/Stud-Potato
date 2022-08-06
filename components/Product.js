@@ -323,7 +323,7 @@ const Product = ({
                   </div>
                 ) : new Date(dateOfPurchase).setDate(
                     new Date(dateOfPurchase).getDate() + 10
-                  ) <= new Date().getTime() ? (
+                  ) >= new Date().getTime() ? (
                   <button
                     onClick={() => {
                       setReplaceOrReturn("return");
