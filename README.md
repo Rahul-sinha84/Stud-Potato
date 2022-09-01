@@ -127,6 +127,13 @@ as `.env.local` in the root directory
 
 You can access the link of the deployed website: https://stud-potato.vercel.app/
 
+##Video
+
+https://user-images.githubusercontent.com/52829478/187812212-062cf02b-ebda-4309-a6a1-9240ca29adc7.mp4
+
+
+
+
 ## Authors
 
 - [@stuti612](https://github.com/stuti612)
